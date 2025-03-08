@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { useSavingsGoals } from '../hooks/useSavingsGoals';
 
 interface AddGoalModalProps {
   isOpen: boolean;
@@ -14,15 +15,71 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
+  const [currentAmount, setCurrentAmount] = useState('');
   const [deadline, setDeadline] = useState('');
   const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  
+  const { addGoal } = useSavingsGoals();
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle goal submission
-    onClose();
+    
+    try {
+      setError(null);
+      setLoading(true);
+      
+      if (!name || !targetAmount) {
+        setError('Please fill in all required fields');
+        return;
+      }
+      
+      const targetAmountValue = parseFloat(targetAmount);
+      if (isNaN(targetAmountValue) || targetAmountValue <= 0) {
+        setError('Please enter a valid target amount');
+        return;
+      }
+      
+      const currentAmountValue = currentAmount ? parseFloat(currentAmount) : 0;
+      if (isNaN(currentAmountValue) || currentAmountValue < 0) {
+        setError('Please enter a valid current amount');
+        return;
+      }
+      
+      if (currentAmountValue > targetAmountValue) {
+        setError('Current amount cannot be greater than target amount');
+        return;
+      }
+      
+      const { error } = await addGoal({
+        name,
+        target_amount: targetAmountValue,
+        current_amount: currentAmountValue,
+        deadline: deadline ? new Date(deadline).toISOString() : null,
+        description: description || null,
+      });
+      
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      
+      // Reset form and close modal
+      setName('');
+      setTargetAmount('');
+      setCurrentAmount('');
+      setDeadline('');
+      setDescription('');
+      onClose();
+    } catch (err) {
+      setError('An unexpected error occurred');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +100,13 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
               <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
             </button>
           </div>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-200 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
@@ -67,6 +131,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                 required
               />
             </div>
+            
             <div>
               <label
                 htmlFor="targetAmount"
@@ -90,6 +155,30 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                 required
               />
             </div>
+            
+            <div>
+              <label
+                htmlFor="currentAmount"
+                className={`block text-sm font-medium ${
+                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                } mb-1`}
+              >
+                Current Amount (TND) (Optional)
+              </label>
+              <input
+                type="number"
+                id="currentAmount"
+                value={currentAmount}
+                onChange={(e) => setCurrentAmount(e.target.value)}
+                className={`w-full px-3 py-2 rounded-lg ${
+                  darkMode
+                    ? 'bg-gray-700 text-white border-gray-600'
+                    : 'bg-white text-gray-900 border-gray-300'
+                } border focus:ring-2 focus:ring-blue-500`}
+                placeholder="0.00"
+              />
+            </div>
+            
             <div>
               <label
                 htmlFor="deadline"
@@ -97,7 +186,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                   darkMode ? 'text-gray-300' : 'text-gray-700'
                 } mb-1`}
               >
-                Target Date
+                Target Date (Optional)
               </label>
               <input
                 type="date"
@@ -111,6 +200,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                 } border focus:ring-2 focus:ring-blue-500`}
               />
             </div>
+            
             <div>
               <label
                 htmlFor="description"
@@ -118,7 +208,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                   darkMode ? 'text-gray-300' : 'text-gray-700'
                 } mb-1`}
               >
-                Description
+                Description (Optional)
               </label>
               <textarea
                 id="description"
@@ -133,6 +223,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                 rows={3}
               />
             </div>
+            
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
@@ -142,14 +233,16 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                     ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
+                disabled={loading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
               >
-                Add Goal
+                {loading ? 'Adding...' : 'Add Goal'}
               </button>
             </div>
           </form>

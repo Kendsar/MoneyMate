@@ -1,182 +1,230 @@
 import React, { useState } from 'react';
-import { Sun, Moon, Bell, Settings, Home, Receipt, PieChart, TrendingUp, Target, Menu } from 'lucide-react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Menu, X, Sun, Moon } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+
+// Pages
+import { Dashboard } from './pages/Dashboard';
+import { Transactions } from './pages/Transactions';
+import { Investments } from './pages/Investments';
+import { Goals } from './pages/Goals';
+import { Budget } from './pages/Budget';
+import { Settings } from './pages/Settings';
+import { Login } from './pages/Login';
+import { SignUp } from './pages/SignUp';
+
+// Components
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { AddInvestmentModal } from './components/AddInvestmentModal';
 import { AddGoalModal } from './components/AddGoalModal';
-import { Dashboard } from './pages/Dashboard';
-import { Transactions } from './pages/Transactions';
-import { Budget } from './pages/Budget';
-import { Investments } from './pages/Investments';
-import { Goals } from './pages/Goals';
-import { Settings as SettingsPage } from './pages/Settings';
-
-const userPreferences = {
-  darkMode: false,
-  user: {
-    name: 'Skander',
-    totalBalance: 'TND 29,563.00',
-    balanceChange: '+2.3%',
-    monthlyIncome: 'TND 2,730.00',
-    incomeChange: '+2.1%',
-    monthlyExpenses: 'TND 1,275.00',
-    expenseChange: '-1.2%',
-  },
-};
+import { BalanceUpdateModal } from './components/BalanceUpdateModal';
 
 function App() {
-  const [darkMode, setDarkMode] = useState(userPreferences.darkMode);
-  const { user } = userPreferences;
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [showInvestmentModal, setShowInvestmentModal] = useState(false);
-  const [showGoalModal, setShowGoalModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [darkMode, setDarkMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showAddInvestment, setShowAddInvestment] = useState(false);
+  const [showAddGoal, setShowAddGoal] = useState(false);
+  const [showBalanceUpdate, setShowBalanceUpdate] = useState(false);
+  
+  const { user, loading } = useAuth();
+  const location = useLocation();
 
-  const financialStats = [
-    { label: 'Total Balance', value: user.totalBalance, change: user.balanceChange },
-    { label: 'Monthly Income', value: user.monthlyIncome, change: user.incomeChange },
-    { label: 'Monthly Expenses', value: user.monthlyExpenses, change: user.expenseChange },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
+  // Auth pages don't need the layout
+  if (!user && (location.pathname === '/login' || location.pathname === '/signup')) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return (
-          <Dashboard 
-            darkMode={darkMode}
-            onAddInvestment={() => setShowInvestmentModal(true)}
-            onAddGoal={() => setShowGoalModal(true)}
-          />
-        );
-      case 'transactions':
-        return <Transactions darkMode={darkMode} />;
-      case 'budget':
-        return <Budget darkMode={darkMode} />;
-      case 'investments':
-        return (
-          <Investments 
-            darkMode={darkMode}
-            onAddInvestment={() => setShowInvestmentModal(true)}
-          />
-        );
-      case 'goals':
-        return (
-          <Goals 
-            darkMode={darkMode}
-            onAddGoal={() => setShowGoalModal(true)}
-          />
-        );
-      case 'settings':
-        return <SettingsPage darkMode={darkMode} />;
-      default:
-        return <Dashboard darkMode={darkMode} onAddInvestment={() => setShowInvestmentModal(true)} onAddGoal={() => setShowGoalModal(true)} />;
-    }
-  };
-
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-      <div className="flex flex-col lg:flex-row">
+    <div className={darkMode ? 'dark' : ''}>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Sidebar */}
-        <nav className={`${darkMode ? 'bg-gray-800' : 'bg-white'} lg:w-64 lg:fixed lg:h-full p-4 border-r ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-          <div className="flex items-center justify-between mb-8">
-            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>MoneyMate</h1>
-            <button onClick={toggleDarkMode} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
-              {darkMode ? <Sun className="w-5 h-5 text-gray-300" /> : <Moon className="w-5 h-5 text-gray-600" />}
-            </button>
-          </div>
-          
-          <div className="space-y-2">
-            {[
-              { icon: Home, label: 'Dashboard', id: 'dashboard' },
-              { icon: Receipt, label: 'Transactions', id: 'transactions' },
-              { icon: PieChart, label: 'Budget', id: 'budget' },
-              { icon: TrendingUp, label: 'Investments', id: 'investments' },
-              { icon: Target, label: 'Goals', id: 'goals' },
-              { icon: Settings, label: 'Settings', id: 'settings' },
-            ].map(({ icon: Icon, label, id }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                  activeTab === id 
-                    ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600')
-                    : (darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100')
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 transform ${
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } md:translate-x-0 transition-transform duration-200 ease-in-out`}
+        >
+          <div className="h-full flex flex-col">
+            <div className="px-4 py-6 border-b dark:border-gray-700">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Finance.io</h1>
+            </div>
+            
+            <nav className="flex-1 px-4 py-4 space-y-1">
+              <a
+                href="/"
+                className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  location.pathname === '/' && 'bg-gray-100 dark:bg-gray-700'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span>{label}</span>
-              </button>
-            ))}
+                Dashboard
+              </a>
+              <a
+                href="/transactions"
+                className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  location.pathname === '/transactions' && 'bg-gray-100 dark:bg-gray-700'
+                }`}
+              >
+                Transactions
+              </a>
+              <a
+                href="/investments"
+                className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  location.pathname === '/investments' && 'bg-gray-100 dark:bg-gray-700'
+                }`}
+              >
+                Investments
+              </a>
+              <a
+                href="/goals"
+                className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  location.pathname === '/goals' && 'bg-gray-100 dark:bg-gray-700'
+                }`}
+              >
+                Goals
+              </a>
+              <a
+                href="/budget"
+                className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  location.pathname === '/budget' && 'bg-gray-100 dark:bg-gray-700'
+                }`}
+              >
+                Budget
+              </a>
+            </nav>
+            
+            <div className="p-4 border-t dark:border-gray-700">
+              <a
+                href="/settings"
+                className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  location.pathname === '/settings' && 'bg-gray-100 dark:bg-gray-700'
+                }`}
+              >
+                Settings
+              </a>
+            </div>
           </div>
-        </nav>
+        </aside>
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 min-h-screen">
-          {/* Header */}
-          <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} p-4`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  Hello, {user.name}! 👋
-                </h2>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Welcome back to your financial dashboard
-                </p>
-              </div>
+        <div className="md:ml-64">
+          {/* Top Bar */}
+          <header className="bg-white dark:bg-gray-800 shadow-sm">
+            <div className="flex items-center justify-between px-4 py-3">
+              <button
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden"
+              >
+                {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+              
               <div className="flex items-center space-x-4">
-                <button className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
-                  <Bell className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                <button
+                  onClick={() => setShowBalanceUpdate(true)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                >
+                  Update Balance
                 </button>
-                <button 
-                  onClick={() => setShowTransactionModal(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                <button
+                  onClick={() => setShowAddTransaction(true)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
                 >
                   Add Transaction
                 </button>
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              {financialStats.map(({ label, value, change }) => (
-                <div
-                  key={label}
-                  className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} p-4 rounded-lg`}
+                <button
+                  onClick={toggleDarkMode}
+                  className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{label}</p>
-                  <div className="flex items-center justify-between mt-1">
-                    <p className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{value}</p>
-                    <span className={`text-sm ${
-                      change.startsWith('+') ? 'text-green-500' : 'text-red-500'
-                    }`}>{change}</span>
-                  </div>
-                </div>
-              ))}
+                  {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
           </header>
 
           {/* Page Content */}
-          {renderContent()}
-        </main>
-      </div>
+          <main>
+            <Routes>
+              <Route 
+                path="/" 
+                element={
+                  <Dashboard 
+                    darkMode={darkMode} 
+                    onAddInvestment={() => setShowAddInvestment(true)}
+                    onAddGoal={() => setShowAddGoal(true)}
+                  />
+                } 
+              />
+              <Route path="/transactions" element={<Transactions darkMode={darkMode} />} />
+              <Route 
+                path="/investments" 
+                element={
+                  <Investments 
+                    darkMode={darkMode} 
+                    onAddInvestment={() => setShowAddInvestment(true)} 
+                  />
+                } 
+              />
+              <Route 
+                path="/goals" 
+                element={
+                  <Goals 
+                    darkMode={darkMode} 
+                    onAddGoal={() => setShowAddGoal(true)} 
+                  />
+                } 
+              />
+              <Route path="/budget" element={<Budget darkMode={darkMode} />} />
+              <Route path="/settings" element={<Settings darkMode={darkMode} />} />
+            </Routes>
+          </main>
+        </div>
 
-      {/* Modals */}
-      <AddTransactionModal
-        isOpen={showTransactionModal}
-        onClose={() => setShowTransactionModal(false)}
-        darkMode={darkMode}
-      />
-      <AddInvestmentModal
-        isOpen={showInvestmentModal}
-        onClose={() => setShowInvestmentModal(false)}
-        darkMode={darkMode}
-      />
-      <AddGoalModal
-        isOpen={showGoalModal}
-        onClose={() => setShowGoalModal(false)}
-        darkMode={darkMode}
-      />
+        {/* Modals */}
+        <AddTransactionModal
+          isOpen={showAddTransaction}
+          onClose={() => setShowAddTransaction(false)}
+          darkMode={darkMode}
+        />
+        
+        <AddInvestmentModal
+          isOpen={showAddInvestment}
+          onClose={() => setShowAddInvestment(false)}
+          darkMode={darkMode}
+        />
+        
+        <AddGoalModal
+          isOpen={showAddGoal}
+          onClose={() => setShowAddGoal(false)}
+          darkMode={darkMode}
+        />
+        
+        <BalanceUpdateModal
+          isOpen={showBalanceUpdate}
+          onClose={() => setShowBalanceUpdate(false)}
+          darkMode={darkMode}
+        />
+      </div>
     </div>
   );
 }

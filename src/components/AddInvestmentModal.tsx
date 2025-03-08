@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { useInvestments } from '../hooks/useInvestments';
 
 interface AddInvestmentModalProps {
   isOpen: boolean;
@@ -16,13 +17,55 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  
+  const { addInvestment } = useInvestments();
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle investment submission
-    onClose();
+    
+    try {
+      setError(null);
+      setLoading(true);
+      
+      if (!name || !amount || !type) {
+        setError('Please fill in all required fields');
+        return;
+      }
+      
+      const amountValue = parseFloat(amount);
+      if (isNaN(amountValue) || amountValue <= 0) {
+        setError('Please enter a valid amount');
+        return;
+      }
+      
+      const { error } = await addInvestment({
+        name,
+        amount: amountValue,
+        type,
+        description: description || null,
+      });
+      
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      
+      // Reset form and close modal
+      setName('');
+      setAmount('');
+      setType('');
+      setDescription('');
+      onClose();
+    } catch (err) {
+      setError('An unexpected error occurred');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +86,13 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
               <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
             </button>
           </div>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-200 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
@@ -67,6 +117,7 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
                 required
               />
             </div>
+            
             <div>
               <label
                 htmlFor="amount"
@@ -90,6 +141,7 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
                 required
               />
             </div>
+            
             <div>
               <label
                 htmlFor="type"
@@ -105,18 +157,22 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
                 onChange={(e) => setType(e.target.value)}
                 className={`w-full px-3 py-2 rounded-lg ${
                   darkMode
-                    ? 'bg-gray-700 text-white border-gray-600'
+                    ?  'bg-gray-700 text-white border-gray-600'
                     : 'bg-white text-gray-900 border-gray-300'
                 } border focus:ring-2 focus:ring-blue-500`}
+                required
               >
                 <option value="">Select type</option>
                 <option value="stocks">Stocks</option>
                 <option value="crypto">Cryptocurrency</option>
                 <option value="realestate">Real Estate</option>
                 <option value="bonds">Bonds</option>
+                <option value="etf">ETF</option>
+                <option value="mutual_fund">Mutual Fund</option>
                 <option value="other">Other</option>
               </select>
             </div>
+            
             <div>
               <label
                 htmlFor="description"
@@ -139,6 +195,7 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
                 rows={3}
               />
             </div>
+            
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
@@ -148,14 +205,16 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
                     ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
+                disabled={loading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
               >
-                Add Investment
+                {loading ? 'Adding...' : 'Add Investment'}
               </button>
             </div>
           </form>
