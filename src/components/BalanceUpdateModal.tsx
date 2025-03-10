@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useFinancialSummary } from '../hooks/useFinancialSummary';
 
@@ -6,23 +6,25 @@ interface BalanceUpdateModalProps {
   isOpen: boolean;
   onClose: () => void;
   darkMode: boolean;
-  initialBalance?: number;
-  initialIncome?: number;
 }
 
 export const BalanceUpdateModal: React.FC<BalanceUpdateModalProps> = ({
   isOpen,
   onClose,
   darkMode,
-  initialBalance = 0,
-  initialIncome = 0,
 }) => {
-  const [balance, setBalance] = useState(initialBalance.toString());
-  const [monthlyIncome, setMonthlyIncome] = useState(initialIncome.toString());
+  const { summary, updateSummary } = useFinancialSummary();
+  const [balance, setBalance] = useState('');
+  const [monthlyIncome, setMonthlyIncome] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  
-  const { updateSummary } = useFinancialSummary();
+
+  useEffect(() => {
+    if (summary) {
+      setBalance(summary.current_balance.toString());
+      setMonthlyIncome(summary.monthly_income.toString());
+    }
+  }, [summary]);
 
   if (!isOpen) return null;
 

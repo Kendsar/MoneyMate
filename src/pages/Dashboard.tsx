@@ -4,6 +4,7 @@ import { SpendingChart } from '../components/SpendingChart';
 import { BudgetProgress } from '../components/BudgetProgress';
 import { SavingsGoal } from '../components/SavingsGoal';
 import { SmartTips } from '../components/SmartTips';
+import { BalanceWidget } from '../components/BalanceWidget';
 import { useTransactions } from '../hooks/useTransactions';
 import { useInvestments } from '../hooks/useInvestments';
 import { useSavingsGoals } from '../hooks/useSavingsGoals';
@@ -76,42 +77,46 @@ export const Dashboard: React.FC<DashboardProps> = ({
   }, [transactions, transactionsLoading]);
 
   return (
-    <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div className="lg:col-span-2">
-        <InvestmentCard 
-          darkMode={darkMode} 
-          onAddInvestment={onAddInvestment}
-          investments={investments}
-          loading={investmentsLoading}
-          currency={profile?.currency || 'TND'}
-        />
-      </div>
-      <div>
-        <SpendingChart 
-          darkMode={darkMode} 
-          categories={spendingBreakdown}
-          loading={transactionsLoading}
-        />
-      </div>
-      <div>
-        <BudgetProgress 
-          darkMode={darkMode}
-          monthlyBudget={Number(summary?.monthly_income || 5000)}
-          spent={Number(summary?.total_expenses || 0)}
-          currency={profile?.currency || 'TND'}
-        />
-      </div>
-      <div>
-        <SavingsGoal 
-          darkMode={darkMode} 
-          onAddGoal={onAddGoal}
-          goals={goals}
-          loading={goalsLoading}
-          currency={profile?.currency || 'TND'}
-        />
-      </div>
-      <div className="lg:col-span-2">
-        <SmartTips darkMode={darkMode} />
+    <div className="p-4">
+      <BalanceWidget darkMode={darkMode} />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <InvestmentCard 
+            darkMode={darkMode} 
+            onAddInvestment={onAddInvestment}
+            investments={investments}
+            loading={investmentsLoading}
+            currency={profile?.currency || 'TND'}
+          />
+        </div>
+        <div>
+          <SpendingChart 
+            darkMode={darkMode} 
+            categories={spendingBreakdown}
+            loading={transactionsLoading}
+          />
+        </div>
+        <div>
+          <BudgetProgress 
+            darkMode={darkMode}
+            monthlyBudget={Number(summary?.monthly_income || 5000)}
+            spent={Number(summary?.total_expenses || 0)}
+            currency={profile?.currency || 'TND'}
+          />
+        </div>
+        <div>
+          <SavingsGoal 
+            darkMode={darkMode} 
+            onAddGoal={onAddGoal}
+            goals={goals}
+            loading={goalsLoading}
+            currency={profile?.currency || 'TND'}
+          />
+        </div>
+        <div className="lg:col-span-2">
+          <SmartTips darkMode={darkMode} />
+        </div>
       </div>
     </div>
   );

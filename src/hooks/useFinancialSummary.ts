@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { FinancialSummary, FinancialSummaryUpdate } from '../types/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -7,90 +7,91 @@ export const useFinancialSummary = () => {
   const [summary, setSummary] = useState<FinancialSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (!user || !profile) {
+  const fetchSummary = useCallback(async () => {
+    if (!user) {
       setSummary(null);
       setLoading(false);
       return;
     }
 
-    const fetchSummary = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const { data, error } = await supabase
-          .from('financial_summaries')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+      const { data, error } = await supabase
+        .from('financial_summaries')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-        if (error) {
-          // If no summary exists, create one
-          if (error.code === 'PGRST116') {
-            // Initialize financial summary
-            const { data: newData, error: initError } = await supabase
-              .from('financial_summaries')
-              .insert([{
-                user_id: user.id,
-                current_balance: 0,
-                monthly_income: 0,
-                total_investments: 0,
-                total_expenses: 0
-              }])
-              .select()
-              .single();
-              
-            if (initError) {
-              throw initError;
-            }
+      if (error) {
+        // If no summary exists, create one
+        if (error.code === 'PGRST116') {
+          const { data: newData, error: initError } = await supabase
+            .from('financial_summaries')
+            .insert([{
+              user_id: user.id,
+              current_balance: 0,
+              monthly_income: 0,
+              total_investments: 0,
+              total_expenses: 0
+            }])
+            .select()
+            .single();
             
-            setSummary(newData as FinancialSummary);
-          } else {
-            throw error;
+          if (initError) {
+            throw initError;
           }
+          
+          setSummary(newData as FinancialSummary);
         } else {
-          setSummary(data as FinancialSummary);
+          throw error;
         }
-      } catch (err) {
-        console.error('Error fetching financial summary:', err);
-        setError(err as Error);
-      } finally {
-        setLoading(false);
+      } else {
+        setSummary(data as FinancialSummary);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching financial summary:', err);
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
+  useEffect(() => {
     fetchSummary();
 
-    // Set up real-time subscription
-    const subscription = supabase
-      .channel('financial_summaries_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'financial_summaries',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setSummary(payload.new as FinancialSummary);
-          } else if (payload.eventType === 'INSERT') {
-            setSummary(payload.new as FinancialSummary);
-          } else if (payload.eventType === 'DELETE') {
-            setSummary(null);
+    // Set up real-time subscription only if user exists
+    if (user) {
+      const subscription = supabase
+        .channel('financial_summaries_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'financial_summaries',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            if (payload.eventType === 'UPDATE') {
+              setSummary(payload.new as FinancialSummary);
+            } else if (payload.eventType === 'INSERT') {
+              setSummary(payload.new as FinancialSummary);
+            } else if (payload.eventType === 'DELETE') {
+              setSummary(null);
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [user, profile]);
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [user, fetchSummary]);
 
   const updateSummary = async (updates: FinancialSummaryUpdate) => {
     try {
@@ -136,31 +137,11 @@ export const useFinancialSummary = () => {
     }
   };
 
-  const manuallyUpdateSummary = async () => {
-    try {
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      const { error } = await supabase
-        .rpc('update_user_financial_summary', { user_uuid: user.id });
-
-      if (error) {
-        throw error;
-      }
-
-      return { error: null };
-    } catch (err) {
-      console.error('Error manually updating financial summary:', err);
-      return { error: err as Error };
-    }
-  };
-
   return {
     summary,
     loading,
     error,
     updateSummary,
-    manuallyUpdateSummary
+    fetchSummary
   };
 };
