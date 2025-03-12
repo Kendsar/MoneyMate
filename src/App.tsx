@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 
@@ -68,61 +68,61 @@ function App() {
         >
           <div className="h-full flex flex-col">
             <div className="px-4 py-6 border-b dark:border-gray-700">
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Finance.io</h1>
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">MoneyMate</h1>
             </div>
             
             <nav className="flex-1 px-4 py-4 space-y-1">
-              <a
-                href="/"
+              <Link
+                to="/"
                 className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
                   location.pathname === '/' && 'bg-gray-100 dark:bg-gray-700'
                 }`}
               >
                 Dashboard
-              </a>
-              <a
-                href="/transactions"
+              </Link>
+              <Link
+                to="/transactions"
                 className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
                   location.pathname === '/transactions' && 'bg-gray-100 dark:bg-gray-700'
                 }`}
               >
                 Transactions
-              </a>
-              <a
-                href="/investments"
+              </Link>
+              <Link
+                to="/investments"
                 className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
                   location.pathname === '/investments' && 'bg-gray-100 dark:bg-gray-700'
                 }`}
               >
                 Investments
-              </a>
-              <a
-                href="/goals"
+              </Link>
+              <Link
+                to="/goals"
                 className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
                   location.pathname === '/goals' && 'bg-gray-100 dark:bg-gray-700'
                 }`}
               >
                 Goals
-              </a>
-              <a
-                href="/budget"
+              </Link>
+              <Link
+                to="/budget"
                 className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
                   location.pathname === '/budget' && 'bg-gray-100 dark:bg-gray-700'
                 }`}
               >
                 Budget
-              </a>
+              </Link>
             </nav>
             
             <div className="p-4 border-t dark:border-gray-700">
-              <a
-                href="/settings"
+              <Link
+                to="/settings"
                 className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
                   location.pathname === '/settings' && 'bg-gray-100 dark:bg-gray-700'
                 }`}
               >
                 Settings
-              </a>
+              </Link>
             </div>
           </div>
         </aside>
