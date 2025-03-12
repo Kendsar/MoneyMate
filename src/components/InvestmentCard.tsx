@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Plus } from 'lucide-react';
 import { Investment } from '../types/supabase';
+import { Link } from 'react-router-dom';
 
 interface InvestmentCardProps {
   darkMode: boolean;
@@ -81,14 +82,14 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
           
           {investments.length > 3 && (
             <div className="text-center mt-4">
-              <button 
-                onClick={() => window.history.pushState({}, '', '/investments')}
+              <Link
+                to="/investments"
                 className={`text-sm font-medium ${
                   darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
                 }`}
               >
                 View all investments ({investments.length}) →
-              </button>
+              </Link>
             </div>
           )}
           

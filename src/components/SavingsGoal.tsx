@@ -1,6 +1,7 @@
 import React from 'react';
 import { Target, Plus } from 'lucide-react';
 import { SavingsGoal as SavingsGoalType } from '../types/supabase';
+import { Link } from 'react-router-dom';
 
 interface SavingsGoalProps {
   darkMode: boolean;
@@ -84,14 +85,14 @@ export const SavingsGoal: React.FC<SavingsGoalProps> = ({
           
           {goals.length > 1 && (
             <div className="text-center mt-4">
-              <button 
-                onClick={() => window.history.pushState({}, '', '/goals')}
+              <Link
+                to="/goals"
                 className={`text-sm font-medium ${
                   darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
                 }`}
               >
                 View all goals ({goals.length}) →
-              </button>
+              </Link>
             </div>
           )}
         </>

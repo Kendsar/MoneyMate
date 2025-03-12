@@ -23,3 +23,13 @@ export type BudgetCategoryUpdate = Database['public']['Tables']['budget_categori
 export type FinancialSummary = Database['public']['Tables']['financial_summaries']['Row'];
 export type FinancialSummaryInsert = Database['public']['Tables']['financial_summaries']['Insert'];
 export type FinancialSummaryUpdate = Database['public']['Tables']['financial_summaries']['Update'];
+
+export type BadHabit = Database['public']['Tables']['bad_habits']['Row'];
+export type BadHabitInsert = Database['public']['Tables']['bad_habits']['Insert'];
+export type BadHabitUpdate = Database['public']['Tables']['bad_habits']['Update'];
+
+export type HabitTracking = Database['public']['Tables']['habit_tracking']['Row'];
+export type HabitTrackingInsert = Database['public']['Tables']['habit_tracking']['Insert'];
+export type HabitTrackingUpdate = Database['public']['Tables']['habit_tracking']['Update'];
+
+export type HabitStatistics = Database['public']['Functions']['get_habit_statistics']['Returns'][0];
