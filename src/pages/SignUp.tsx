@@ -47,7 +47,7 @@ export const SignUp: React.FC = () => {
         // In a real app, you might want to redirect to a verification page
         // or directly to the dashboard if email confirmation is disabled
         setTimeout(() => {
-          navigate('/');
+          window.location.href = '/';
         }, 2000);
       }
     } catch (err) {
@@ -62,7 +62,7 @@ export const SignUp: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Finance.io</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">MoneyMate</h1>
           <h2 className="mt-6 text-2xl font-semibold text-gray-800 dark:text-gray-200">Create your account</h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{' '}
