@@ -24,6 +24,7 @@ export const Settings: React.FC<SettingsProps> = ({ darkMode }) => {
 
   const handleSignOut = async () => {
     await signOut();
+    window.location.href = '/login';
   };
 
   const handleProfileUpdate = async () => {
