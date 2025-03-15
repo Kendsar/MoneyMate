@@ -12,6 +12,7 @@ import { Budget } from './pages/Budget';
 import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
+import BadHabits from './pages/BadHabits';
 
 // Components
 import { AddTransactionModal } from './components/AddTransactionModal';
@@ -105,6 +106,14 @@ function App() {
                 Goals
               </Link>
               <Link
+                to="/badHabits"
+                className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  location.pathname === '/badHabits' && 'bg-gray-100 dark:bg-gray-700'
+                }`}
+              >
+                Bad Habits
+              </Link>
+              <Link
                 to="/budget"
                 className={`flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
                   location.pathname === '/budget' && 'bg-gray-100 dark:bg-gray-700'
@@ -194,6 +203,7 @@ function App() {
                   />
                 } 
               />
+              <Route path="/badHabits" element={<BadHabits darkMode={darkMode}/>} />
               <Route path="/budget" element={<Budget darkMode={darkMode} />} />
               <Route path="/settings" element={<Settings darkMode={darkMode} />} />
             </Routes>
