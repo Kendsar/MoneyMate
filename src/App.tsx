@@ -203,7 +203,7 @@ function App() {
                   />
                 } 
               />
-              <Route path="/badHabits" element={<BadHabits />} />
+              <Route path="/badHabits" element={<BadHabits darkMode={darkMode}/>} />
               <Route path="/budget" element={<Budget darkMode={darkMode} />} />
               <Route path="/settings" element={<Settings darkMode={darkMode} />} />
             </Routes>
