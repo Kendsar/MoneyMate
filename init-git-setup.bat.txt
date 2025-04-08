@@ -1,0 +1,43 @@
+@echo off
+:: Hard-code the repo URL
+SET REPO_URL=https://github.com/Kendsar/MoneyMate.git
+
+:: Get the current folder name (in case you need to know for other operations)
+FOR %%F IN (%CD%) DO SET REPO_NAME=%%~NXF
+
+:: Ask for commit message
+SET /p COMMIT_MSG="Enter your commit message: "
+
+echo.
+echo Initializing Git...
+git init
+
+echo Adding remote origin: %REPO_URL%
+git remote add origin %REPO_URL%
+
+echo Fetching remote master...
+git fetch
+
+echo Checking out master branch...
+git checkout -b master origin/master 2>nul || git checkout master
+
+echo Creating .gitignore...
+(
+echo node_modules/
+echo dist/
+echo .env
+echo .vscode/
+) > .gitignore
+
+echo Adding all files...
+git add .
+
+echo Committing with message: %COMMIT_MSG%
+git commit -m "%COMMIT_MSG%"
+
+echo Pushing to master...
+git push origin master
+
+echo.
+echo Done! Your project is now synced with the remote repo %REPO_URL%.
+pause

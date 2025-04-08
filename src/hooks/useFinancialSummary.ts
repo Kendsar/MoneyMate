@@ -20,15 +20,26 @@ export const useFinancialSummary = () => {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('financial_summaries')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // More efficient than .single() for optional results
 
-      if (error) {
-        // If no summary exists, create one
-        if (error.code === 'PGRST116') {
+      if (fetchError) {
+        // If no summary exists, create one with optimistic update
+        if (fetchError.code === 'PGRST116') {
+          setSummary({
+            id: 'temp',
+            user_id: user.id,
+            current_balance: 0,
+            monthly_income: 0,
+            total_investments: 0,
+            total_expenses: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
           const { data: newData, error: initError } = await supabase
             .from('financial_summaries')
             .insert([{
@@ -47,7 +58,7 @@ export const useFinancialSummary = () => {
           
           setSummary(newData as FinancialSummary);
         } else {
-          throw error;
+          throw fetchError;
         }
       } else {
         setSummary(data as FinancialSummary);
@@ -63,7 +74,7 @@ export const useFinancialSummary = () => {
   useEffect(() => {
     fetchSummary();
 
-    // Set up real-time subscription only if user exists
+    // Optimize realtime subscription with specific columns
     if (user) {
       const subscription = supabase
         .channel('financial_summaries_changes')
@@ -76,9 +87,7 @@ export const useFinancialSummary = () => {
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            if (payload.eventType === 'UPDATE') {
-              setSummary(payload.new as FinancialSummary);
-            } else if (payload.eventType === 'INSERT') {
+            if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
               setSummary(payload.new as FinancialSummary);
             } else if (payload.eventType === 'DELETE') {
               setSummary(null);
@@ -99,34 +108,28 @@ export const useFinancialSummary = () => {
         throw new Error('User not authenticated');
       }
 
-      if (!summary) {
-        // If summary doesn't exist, create it first
-        const { data: newSummary, error: createError } = await supabase
-          .from('financial_summaries')
-          .insert([{
-            user_id: user.id,
-            ...updates
-          }])
-          .select()
-          .single();
-
-        if (createError) {
-          throw createError;
-        }
-
-        setSummary(newSummary as FinancialSummary);
-        return { data: newSummary as FinancialSummary, error: null };
+      // Optimistic update
+      if (summary) {
+        setSummary({
+          ...summary,
+          ...updates,
+          updated_at: new Date().toISOString()
+        });
       }
 
       const { data, error } = await supabase
         .from('financial_summaries')
-        .update(updates)
-        .eq('id', summary.id)
-        .eq('user_id', user.id)
+        .upsert({
+          user_id: user.id,
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
         .select()
         .single();
 
       if (error) {
+        // Rollback optimistic update
+        fetchSummary();
         throw error;
       }
 

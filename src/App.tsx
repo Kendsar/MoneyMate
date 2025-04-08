@@ -56,20 +56,29 @@ function App() {
   }
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
+  const closeSidebar = () => {
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   return (
     <div className={darkMode ? 'dark' : ''}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-primary-900">
         {/* Sidebar */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 transform ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-primary-800 transform ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } md:translate-x-0 transition-transform duration-200 ease-in-out`}
+          } md:translate-x-0 transition-transform duration-200 ease-in-out shadow-lg`}
         >
           <div className="h-full flex flex-col">
-            <div className="px-4 py-6 border-b dark:border-gray-700">
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">MoneyMate</h1>
+            <div className="px-4 py-6 border-b dark:border-primary-700">
+              <h1 className="text-2xl font-bold text-primary-800 dark:text-white">MoneyMate</h1>
             </div>
             
             <nav className="flex-1 px-4 py-4 space-y-1">
