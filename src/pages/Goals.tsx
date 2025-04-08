@@ -151,27 +151,25 @@ export const Goals: React.FC<GoalsProps> = ({ darkMode, onAddGoal }) => {
             const daysLeft = calculateDaysLeft(goal.deadline);
             
             return (
-              <div 
-                key={goal.id} 
-                className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-sm`}
+              <div
+                key={goal.id}
+                className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl p-6 shadow-sm relative`}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    <h3 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>
                       {goal.name}
                     </h3>
                     {goal.description && (
-                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {goal.description}
-                      </p>
+                      <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>{goal.description}</p>
                     )}
                   </div>
                   <button
                     onClick={() => handleDelete(goal.id)}
                     disabled={isDeleting === goal.id}
-                    className={`p-1 rounded-full ${
-                      darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                    } ${isDeleting === goal.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`p-1 rounded-full ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"} ${
+                      isDeleting === goal.id ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
                     <Trash2 className="w-5 h-5 text-red-500" />
                   </button>
@@ -179,14 +177,13 @@ export const Goals: React.FC<GoalsProps> = ({ darkMode, onAddGoal }) => {
                 
                 <div className="mb-4">
                   <div className="flex items-end justify-between mb-1">
-                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    <p className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-800"}`}>
                       TND {currentAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                       of TND {targetAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
-                  
                   <div className="relative pt-1">
                     <div className="flex h-2 mb-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                       <div
@@ -194,33 +191,34 @@ export const Goals: React.FC<GoalsProps> = ({ darkMode, onAddGoal }) => {
                         className="flex flex-col justify-center overflow-hidden bg-green-500"
                       ></div>
                     </div>
-                    <p className={`text-sm text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <p className={`text-sm text-center ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                       {percentage}% of goal reached
                     </p>
                   </div>
                 </div>
                 
+                <div className="mb-4">
+                  <p className={`text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Amount Needed</p>
+                  <p className={`text-lg font-bold ${darkMode ? "text-white" : "text-gray-800"}`}>
+                    TND {(targetAmount - currentAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+                
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Target Date</p>
-                    <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      {formatDate(goal.deadline)}
-                    </p>
+                    <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Target Date</p>
+                    <p className={`font-medium ${darkMode ? "text-white" : "text-gray-800"}`}>{formatDate(goal.deadline)}</p>
                   </div>
                   {daysLeft !== null && (
                     <div>
-                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Days Left</p>
-                      <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {daysLeft}
-                      </p>
+                      <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Days Left</p>
+                      <p className={`font-medium ${darkMode ? "text-white" : "text-gray-800"}`}>{daysLeft}</p>
                     </div>
                   )}
                 </div>
                 
                 <div className="mt-4">
-                  <p className={`text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Add Contribution
-                  </p>
+                  <p className={`text-sm mb-1 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Add Contribution</p>
                   <div className="flex space-x-2">
                     <input
                       type="number"
@@ -228,9 +226,7 @@ export const Goals: React.FC<GoalsProps> = ({ darkMode, onAddGoal }) => {
                       value={contributionAmount}
                       onChange={(e) => setContributionAmount(e.target.value)}
                       className={`flex-1 px-3 py-2 rounded-lg ${
-                        darkMode
-                          ? 'bg-gray-700 text-white border-gray-600'
-                          : 'bg-white text-gray-900 border-gray-300'
+                        darkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"
                       } border focus:ring-2 focus:ring-blue-500`}
                     />
                     <button
@@ -238,12 +234,13 @@ export const Goals: React.FC<GoalsProps> = ({ darkMode, onAddGoal }) => {
                       disabled={isUpdating === goal.id}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isUpdating === goal.id ? 'Adding...' : 'Add'}
+                      {isUpdating === goal.id ? "Adding..." : "Add"}
                     </button>
                   </div>
                 </div>
               </div>
             );
+            
           })}
         </div>
       )}
